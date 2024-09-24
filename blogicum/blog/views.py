@@ -2,19 +2,17 @@ from django.db.models.manager import Manager
 from django.shortcuts import render, get_object_or_404
 from django.utils import timezone
 
-from blog.models import Post, Category, Location
+from blog.models import Post, Category
 
 
 def get_published(posts: Manager):
     """Return published posts."""
-    return (posts
+    return (
+        posts
         .select_related('category', 'author', 'location')
-        .filter(
-            is_published=True,
-            pub_date__lte=timezone.now(),
-            category__is_published=True
-        )
-    )
+        .filter(is_published=True,
+                pub_date__lte=timezone.now(),
+                category__is_published=True))
 
 
 def index(request):
