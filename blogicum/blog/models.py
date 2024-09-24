@@ -5,11 +5,11 @@ from django.db import models
 User = get_user_model()
 
 
-class BaseModel(models.Model):
+class PublishedModel(models.Model):
     is_published = models.BooleanField(
         default=True,
         verbose_name='Опубликовано',
-        help_text='Снимите галочку, чтобы скрыть публикацию'
+        help_text='Снимите галочку, чтобы скрыть публикацию.'
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
@@ -20,7 +20,7 @@ class BaseModel(models.Model):
         abstract = True
 
 
-class Category(BaseModel):
+class Category(PublishedModel):
     title = models.CharField(max_length=256, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
@@ -30,24 +30,19 @@ class Category(BaseModel):
                   'разрешены символы латиницы, цифры, '
                   'дефис и подчёркивание.'
     )
-    is_published = models.BooleanField(
-        default=True,
-        verbose_name='Опубликовано',
-        help_text='Снимите галочку, чтобы скрыть публикацию.'
-    )
 
     class Meta:
         verbose_name = 'категория'
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return (f'id: {self.id}, '
+        return (f'{self.id=}, '
                 f'{self.title[:30]}, '
-                f'slug: {self.slug}, '
-                f'is_published: {self.is_published}')
+                f'{self.slug=}, '
+                f'={self.is_published=}')
 
 
-class Location(BaseModel):
+class Location(PublishedModel):
     name = models.CharField(max_length=256, verbose_name='Название места')
 
     class Meta:
@@ -55,12 +50,12 @@ class Location(BaseModel):
         verbose_name_plural = 'Местоположения'
 
     def __str__(self):
-        return (f'id: {self.id}, '
+        return (f'{self.id=}, '
                 f'{self.name[:30]}, '
-                f'is_published: {self.is_published}')
+                f'{self.is_published=}')
 
 
-class Post(BaseModel):
+class Post(PublishedModel):
     title = models.CharField(
         max_length=256, verbose_name='Заголовок'
     )
@@ -74,21 +69,21 @@ class Post(BaseModel):
         User,
         on_delete=models.CASCADE,
         verbose_name='Автор публикации',
-        related_name='author'
+        related_name='posts'
     )
     location = models.ForeignKey(
         Location,
         on_delete=models.SET_NULL,
         null=True,
         verbose_name='Местоположение',
-        related_name='location'
+        related_name='posts'
     )
     category = models.ForeignKey(
         Category,
         on_delete=models.SET_NULL,
         null=True,
         verbose_name='Категория',
-        related_name='category'
+        related_name='posts'
     )
 
     class Meta:
@@ -97,7 +92,7 @@ class Post(BaseModel):
         verbose_name_plural = 'Публикации'
 
     def __str__(self):
-        return (f'id: {self.id}, '
+        return (f'{self.id=}, '
                 f'{self.title[:30]}, '
-                f'Автор: {self.author}, '
-                f'Категория: {self.category.title[:30]}')
+                f'{self.author=}, '
+                f'category=\'{self.category.title[:30]}\'')

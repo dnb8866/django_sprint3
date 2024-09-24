@@ -23,10 +23,9 @@ class PostAdmin(admin.ModelAdmin):
     ordering = ['-pub_date', 'author']
     list_per_page = 10
 
+    @admin.display(description='text')
     def short_text(self, post):
         return post.text[:50]
-
-    short_text.short_description = 'text'
 
 
 class CategoryAdmin(admin.ModelAdmin):
