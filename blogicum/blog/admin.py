@@ -23,8 +23,8 @@ class PostAdmin(admin.ModelAdmin):
     ordering = ['-pub_date', 'author']
     list_per_page = 10
 
-    def short_text(self, obj):
-        return obj.text[:50] + '...' if len(obj.text) > 50 else obj.text
+    def short_text(self, post):
+        return post.text[:50]
 
     short_text.short_description = 'text'
 

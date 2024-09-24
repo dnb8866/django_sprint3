@@ -1,48 +1,26 @@
 from django.contrib.auth import get_user_model
 from django.db import models
 
-from core.models import PublishedModel, CreatedModel
-
 
 User = get_user_model()
 
 
-class Post(PublishedModel, CreatedModel):
-    title = models.CharField(
-        max_length=256, verbose_name='Заголовок'
+class BaseModel(models.Model):
+    is_published = models.BooleanField(
+        default=True,
+        verbose_name='Опубликовано',
+        help_text='Снимите галочку, чтобы скрыть публикацию'
     )
-    text = models.TextField(verbose_name='Текст')
-    pub_date = models.DateTimeField(
-        verbose_name='Дата и время публикации',
-        help_text='Если установить дату и время в будущем '
-                  '— можно делать отложенные публикации.'
-    )
-    author = models.ForeignKey(
-        User, on_delete=models.CASCADE, verbose_name='Автор публикации'
-    )
-    location = models.ForeignKey(
-        'Location',
-        on_delete=models.SET_NULL,
-        null=True,
-        verbose_name='Местоположение'
-    )
-    category = models.ForeignKey(
-        'Category',
-        on_delete=models.SET_NULL,
-        null=True,
-        verbose_name='Категория'
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Добавлено'
     )
 
     class Meta:
-        ordering = ('-pub_date',)
-        verbose_name = 'публикация'
-        verbose_name_plural = 'Публикации'
-
-    def __str__(self):
-        return self.title
+        abstract = True
 
 
-class Category(PublishedModel, CreatedModel):
+class Category(BaseModel):
     title = models.CharField(max_length=256, verbose_name='Заголовок')
     description = models.TextField(verbose_name='Описание')
     slug = models.SlugField(
@@ -52,7 +30,6 @@ class Category(PublishedModel, CreatedModel):
                   'разрешены символы латиницы, цифры, '
                   'дефис и подчёркивание.'
     )
-    # Pytest не дает перенести данное поле в абстрактный класс PublishedModel
     is_published = models.BooleanField(
         default=True,
         verbose_name='Опубликовано',
@@ -64,10 +41,13 @@ class Category(PublishedModel, CreatedModel):
         verbose_name_plural = 'Категории'
 
     def __str__(self):
-        return self.title
+        return (f'id: {self.id}, '
+                f'{self.title[:30]}, '
+                f'slug: {self.slug}, '
+                f'is_published: {self.is_published}')
 
 
-class Location(PublishedModel, CreatedModel):
+class Location(BaseModel):
     name = models.CharField(max_length=256, verbose_name='Название места')
 
     class Meta:
@@ -75,4 +55,49 @@ class Location(PublishedModel, CreatedModel):
         verbose_name_plural = 'Местоположения'
 
     def __str__(self):
-        return self.name
+        return (f'id: {self.id}, '
+                f'{self.name[:30]}, '
+                f'is_published: {self.is_published}')
+
+
+class Post(BaseModel):
+    title = models.CharField(
+        max_length=256, verbose_name='Заголовок'
+    )
+    text = models.TextField(verbose_name='Текст')
+    pub_date = models.DateTimeField(
+        verbose_name='Дата и время публикации',
+        help_text='Если установить дату и время в будущем '
+                  '— можно делать отложенные публикации.'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор публикации',
+        related_name='author'
+    )
+    location = models.ForeignKey(
+        Location,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Местоположение',
+        related_name='location'
+    )
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.SET_NULL,
+        null=True,
+        verbose_name='Категория',
+        related_name='category'
+    )
+
+    class Meta:
+        ordering = ('-pub_date',)
+        verbose_name = 'публикация'
+        verbose_name_plural = 'Публикации'
+
+    def __str__(self):
+        return (f'id: {self.id}, '
+                f'{self.title[:30]}, '
+                f'Автор: {self.author}, '
+                f'Категория: {self.category.title[:30]}')

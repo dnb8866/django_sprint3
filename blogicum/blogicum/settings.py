@@ -30,7 +30,6 @@ ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 # Application definition
 
 INSTALLED_APPS = [
-    'core.apps.CoreConfig',
     'pages.apps.PagesConfig',
     'blog.apps.BlogConfig',
     'django.contrib.admin',
